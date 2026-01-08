@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+# Activate virtual environment
+if [ -f ".venv/bin/activate" ]; then
+    source .venv/bin/activate
+else
+    echo "❌ Virtual environment not found. Run ./setup.sh first."
+    exit 1
+fi
+
+# Forward all args to python inside the venv
+python "$@"
