@@ -1,0 +1,6 @@
+# Vision-based Hand Tracking
+
+The goal of this project is to build a computer-vision-based hand tracking pipeline
+that can be used in a simulation context (e.g. SOFA), or even eventually with real hardware.
+
+But the *real* goal is to have fun while experimenting with vision, tracking, and interaction!
