@@ -174,7 +174,7 @@ class Viewer:
     def run(self):
         if self.headless:
             if self.timeout:
-                for _ in range(max(self.timeout,1000)):
+                for _ in range(min(self.timeout,1000)):
                     self.update_frame()
             else:
                 while True:
