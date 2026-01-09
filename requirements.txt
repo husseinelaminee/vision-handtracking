@@ -2,3 +2,4 @@ opencv-python
 pytest
 pillow
 dearpygui
+mediapipe==0.10.9
