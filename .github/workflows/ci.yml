@@ -31,13 +31,8 @@ jobs:
             - name: Run tests
               shell: bash
               run: |
-                  if ls tests/test_*.py tests/*_test.py 1> /dev/null 2>&1; then
-                      echo "📦 Test files found, running pytest...";
-                      if ! pytest -q; then
-                      echo "❌ Tests failed";
-                      exit 1;
-                      fi
-                      echo "✅ Tests passed";
-                  else
-                      echo "ℹ️ No test files found, skipping tests";
-                  fi
+                    if ! pytest -q; then
+                    echo "❌ Tests failed";
+                    exit 1;
+                    fi
+                    echo "✅ Tests passed";
