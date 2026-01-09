@@ -1,4 +1,4 @@
-from vision.ui.viewer import Viewer
+from ui.viewer import Viewer
 
 viewer = Viewer()
 viewer.run()
