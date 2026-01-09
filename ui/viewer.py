@@ -179,6 +179,7 @@ class Viewer:
             else:
                 while True:
                     self.update_frame()
+            return
         while dpg.is_dearpygui_running():
             self.update_frame()
             dpg.render_dearpygui_frame()
