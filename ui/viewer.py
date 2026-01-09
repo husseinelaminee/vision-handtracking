@@ -1,185 +1,90 @@
 import cv2
 import numpy as np
-from dearpygui import dearpygui as dpg
+import dearpygui.dearpygui as dpg
 
-from vision.camera.camera import Camera
-from vision.camera.camera_utils import list_cameras
+from vision.pipeline.pipeline import Pipeline
+from vision.pipeline.stages.camera_source_stage import CameraSourceStage
+from vision.pipeline.stages.identity_stage import IdentityStage
 
-MIRROR_IMAGE = True
-ASPECT_RATIO=4/3
+ASPECT_RATIO = 4/3
 SAVE_DIR = "data/snapshots"
 
 class Viewer:
-    def __init__(self, width=800, height=600,  headless=False,timeout=None):
-        self.cam = None
-        self.should_capture = False
+    def __init__(self, width=800, height=600, headless=False, timeout=None):
         self.headless = headless
         self.timeout = timeout
         self.width = width
         self.height = height
         self.last_size = (width, height)
+        self.should_capture = False
 
-        self._pending_camera_index = None
+        # In headless, replace camera stage with dummy static frame generator
+        if headless:
+            from vision.pipeline.stages.mock_camera_stage import MockCameraStage
+            camera_stage = MockCameraStage()
+        else:
+            camera_stage = CameraSourceStage(mirror=True)
 
-        dpg.create_context()
+        self.pipelines = [
+            Pipeline([camera_stage]),
+            Pipeline([IdentityStage()]),
+        ]
 
-        with dpg.texture_registry(show=False):
-            empty = np.zeros((height * width * 3,), dtype=np.float32)
-            dpg.add_raw_texture(width, height, empty,
-                                format=dpg.mvFormat_Float_rgb,
-                                tag="video_texture")
+        if not self.headless:
+            dpg.create_context()
 
-        with dpg.window(tag="MainWindow", label="Camera Viewer"):
-            dpg.add_image("video_texture", tag="video_image")
+            with dpg.texture_registry(show=False):
+                empty = np.zeros((height * width * 3,), dtype=np.float32)
+                dpg.add_raw_texture(
+                    width, height, empty, tag="video_texture",
+                    format=dpg.mvFormat_Float_rgb
+                )
 
-        cams = list_cameras()
-        names = [f"Camera {i}" for i in cams]
+            with dpg.window(tag="MainWindow", label="Camera Viewer"):
+                dpg.add_image("video_texture", tag="video_image")
 
-        if not names:
-            print("⚠️ No cameras detected.")
-            names = ["No camera found"]
-            self._pending_camera_index = None
-            self.cam = None
+        # Attach UI only if not headless
+        if not self.headless:
+            for pipeline in self.pipelines:
+                pipeline.attach_ui()
 
-
-        with dpg.window(tag="Overlay", pos=(20, 20)):
-            dpg.add_text("Select Camera")
-            dpg.add_combo(items=names, default_value=names[0],
-                          tag="camera_list", width=150,
-                          callback=self.request_camera_change)
-            dpg.add_button(label="Capture Image", callback=self.trigger_capture)
-
-
-        self.request_camera_change()
+        for pipeline in self.pipelines:
+            pipeline.initialize()
 
         if not self.headless:
             dpg.create_viewport(title="Camera Viewer", width=width, height=height)
             dpg.setup_dearpygui()
             dpg.show_viewport()
 
-
-    def request_camera_change(self, sender=None, app_data=None):
-        selected = dpg.get_value("camera_list")
-        try:
-            index = int(selected.split()[-1])
-        except:
-            return
-        self._pending_camera_index = index
-
-
-    def apply_camera_change(self):
-        index = self._pending_camera_index
-        if index is None:
-            return
-
-        if self.cam:
-            self.cam.release()
-
-        cam = Camera(index)
-        cam.open()
-        self.cam = cam
-
-        self._pending_camera_index = None
-        print(f"Camera switched to index {index}")
-
-    def resize_everything(self, w, h):
-        self.width = w
-        self.height = h
-
-        dpg.set_item_width("MainWindow", w)
-        dpg.set_item_height("MainWindow", h)
-        dpg.configure_item("MainWindow", autosize=False)
-
-        if dpg.does_item_exist("video_image"):
-            dpg.delete_item("video_image")
-
-        if dpg.does_item_exist("video_texture"):
-            dpg.delete_item("video_texture")
-
-        empty = np.zeros((h * w * 3,), dtype=np.float32)
-
-        with dpg.texture_registry(show=False):
-            dpg.add_raw_texture(
-                w, h,
-                empty,
-                format=dpg.mvFormat_Float_rgb,
-                tag="video_texture"
-            )
-
-        dpg.add_image("video_texture", tag="video_image", parent="MainWindow",
-                    width=w, height=h)
-
-        print(f"[Resize] texture={w}x{h}")
-
-    def save_frame(self, frame):
-        import datetime
-        ts = datetime.datetime.now().strftime("%Y%m%d_%H%M%S_%f")
-        filename = f"{SAVE_DIR}/frame_{ts}.png"
-        cv2.imwrite(filename, frame)
-        print(f"[Capture] Saved {filename}")
-
-    def trigger_capture(self):
-        self.should_capture = True
-
     def update_frame(self):
-        
-        if not self.headless:
-            vw = dpg.get_viewport_width()
-            vh = dpg.get_viewport_height()
+        frame = None
+        state = {}
 
-            if (vw, vh) != self.last_size:
-                self.resize_everything(vw, vh)
-                self.last_size = (vw, vh)
+        for pipeline in self.pipelines:
+            frame, state = pipeline.process(frame, state)
+            if frame is None:
+                return
 
-        if self._pending_camera_index is not None:
-            self.apply_camera_change()
+        # In headless, skip UI
+        if self.headless:
+            return frame
 
-        if not self.cam:
-            return
-
-        frame = self.cam.read()
-        if frame is None:
-            return
-        
-
-        if MIRROR_IMAGE:
-            frame = cv2.flip(frame, 1)
-
-        if self.should_capture:
-            self.save_frame(frame)
-            self.should_capture = False
-
-        image_w = self.width
-        image_h = int(self.width / ASPECT_RATIO)
-
-        if image_h > self.height:
-            image_h = self.height
-            image_w = int(self.height * ASPECT_RATIO)
-
-
+        # UI path
         frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        frame_rgb = cv2.resize(frame_rgb, (image_w,image_h))
         frame_rgb = frame_rgb.astype(np.float32) / 255.0
-        
-        canvas = np.zeros((self.height, self.width, 3), dtype=np.float32)
-                
-        x = (self.width - image_w) // 2
-        y = (self.height - image_h) // 2
-        canvas[y:y+image_h, x:x+image_w] = frame_rgb
-        if not self.headless:
-            dpg.set_value("video_texture", canvas.flatten())
-        return frame
+        frame_rgb = cv2.resize(frame_rgb, (self.width, self.height))
 
+        dpg.set_value("video_texture", frame_rgb.flatten())
 
     def run(self):
         if self.headless:
-            if self.timeout:
-                for _ in range(min(self.timeout,1000)):
-                    self.update_frame()
-            else:
-                while True:
-                    self.update_frame()
+            # Headless stops after timeout frames
+            limit = self.timeout if self.timeout else 1
+            for _ in range(limit):
+                self.update_frame()
             return
+
+        # UI loop
         while dpg.is_dearpygui_running():
             self.update_frame()
             dpg.render_dearpygui_frame()
