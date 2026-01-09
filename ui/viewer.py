@@ -55,9 +55,10 @@ class Viewer:
 
     def request_camera_change(self, sender=None, app_data=None):
         selected = dpg.get_value("camera_list")
-        if type(selected) != int:
+        try:
+            index = int(selected.split()[-1])
+        except:
             return
-        index = int(selected.split()[-1])
         self._pending_camera_index = index
 
 
