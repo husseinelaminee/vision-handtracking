@@ -7,9 +7,12 @@ from vision.camera.camera_utils import list_cameras
 
 MIRROR_IMAGE = True
 ASPECT_RATIO=4/3
+SAVE_DIR = "data/snapshots"
+
 class Viewer:
     def __init__(self, width=800, height=600,  headless=False,timeout=None):
         self.cam = None
+        self.should_capture = False
         self.headless = headless
         self.timeout = timeout
         self.width = width
@@ -44,6 +47,8 @@ class Viewer:
             dpg.add_combo(items=names, default_value=names[0],
                           tag="camera_list", width=150,
                           callback=self.request_camera_change)
+            dpg.add_button(label="Capture Image", callback=self.trigger_capture)
+
 
         self.request_camera_change()
 
@@ -106,8 +111,15 @@ class Viewer:
 
         print(f"[Resize] texture={w}x{h}")
 
+    def save_frame(self, frame):
+        import datetime
+        ts = datetime.datetime.now().strftime("%Y%m%d_%H%M%S_%f")
+        filename = f"{SAVE_DIR}/frame_{ts}.png"
+        cv2.imwrite(filename, frame)
+        print(f"[Capture] Saved {filename}")
 
-
+    def trigger_capture(self):
+        self.should_capture = True
 
     def update_frame(self):
         
@@ -133,6 +145,10 @@ class Viewer:
         if MIRROR_IMAGE:
             frame = cv2.flip(frame, 1)
 
+        if self.should_capture:
+            self.save_frame(frame)
+            self.should_capture = False
+
         image_w = self.width
         image_h = int(self.width / ASPECT_RATIO)
 
@@ -141,15 +157,15 @@ class Viewer:
             image_w = int(self.height * ASPECT_RATIO)
 
 
-        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        frame = cv2.resize(frame, (image_w,image_h))
-        frame = frame.astype(np.float32) / 255.0
+        frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        frame_rgb = cv2.resize(frame_rgb, (image_w,image_h))
+        frame_rgb = frame_rgb.astype(np.float32) / 255.0
         
         canvas = np.zeros((self.height, self.width, 3), dtype=np.float32)
                 
         x = (self.width - image_w) // 2
         y = (self.height - image_h) // 2
-        canvas[y:y+image_h, x:x+image_w] = frame
+        canvas[y:y+image_h, x:x+image_w] = frame_rgb
         if not self.headless:
             dpg.set_value("video_texture", canvas.flatten())
         return frame
