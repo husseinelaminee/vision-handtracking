@@ -8,6 +8,7 @@ class CameraManager:
         self.camera = None
         self.current_index = None
         self.pending_index = None
+        self.name_index = None
 
     def list_indices(self):
         return list_cameras()
@@ -16,6 +17,13 @@ class CameraManager:
         return [f"Camera {i}" for i in self.list_indices()]
 
     def request_change(self, index):
+        if index == -1:
+            index = self.list_indices()[-1]
+            self.name_index = max(0,len(self.list_indices())-1)
+        else:
+            for index_key, index_val in enumerate(self.list_indices()):
+                index_val == index
+                self.name_index = index_key
         self.pending_index = index
 
     def apply_change(self):

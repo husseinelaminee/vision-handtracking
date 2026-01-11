@@ -10,7 +10,9 @@ class CameraSourceStage(Stage):
     def initialize(self):
         names = self.manager.get_camera_names()
         if names:
-            self.manager.request_change(0)
+            # Use the last detected camera as intended by default
+            self.manager.request_change(-1)
+
 
     def attach_ui(self):
         if self.ui_ready:
@@ -18,12 +20,12 @@ class CameraSourceStage(Stage):
         self.ui_ready = True
 
         names = self.manager.get_camera_names()
-
+        index = 0 if self.manager.name_index is None else self.manager.name_index
         with dpg.window(label="Camera Controls", pos=(20, 60), width=200, height=100):
             dpg.add_text("Select Camera")
             dpg.add_combo(
                 items=names,
-                default_value=names[0] if names else "",
+                default_value=names[index] if names else "",
                 callback=self._on_camera_selected,
             )
 
