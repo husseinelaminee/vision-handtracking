@@ -2,8 +2,8 @@ from app.renderer import Renderer
 from vision.pipeline.pipeline import Pipeline
 class Application:
     def __init__(self, pipelines:list[Pipeline], renderer: Renderer):
-        self.pipelines = pipelines
-        self.renderer = renderer
+        self.pipelines: list[Pipeline] = pipelines
+        self.renderer: Renderer = renderer
         for p in self.pipelines:
             p.initialize()
         
@@ -30,9 +30,8 @@ class Application:
 
     def _update_once(self):
         frame = None
-        state = {}
 
         for p in self.pipelines:
-            frame, state = p.process(frame, state)
+            frame = p.process(frame)
 
         self.renderer.update(frame)
