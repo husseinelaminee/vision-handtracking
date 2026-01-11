@@ -1,5 +1,7 @@
 import cv2
 
+cv2.setLogLevel(0)
+
 def list_cameras(max_test=10):
     available = []
     for index in range(max_test):
