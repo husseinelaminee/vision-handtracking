@@ -1,4 +1,5 @@
 from vision.pipeline.stages.stage_base import Stage
+from vision.pipeline.state import PipelineState
 from vision.camera.camera_manager import CameraManager
 import dearpygui.dearpygui as dpg
 
@@ -36,7 +37,7 @@ class CameraSourceStage(Stage):
             return
         self.manager.request_change(idx)
 
-    def process(self, frame, state):
+    def process(self, frame, state: PipelineState):
         frame = self.manager.get_frame()
-        state["camera_index"] = self.manager.current_index
+        state.camera_index = self.manager.current_index
         return frame, state
