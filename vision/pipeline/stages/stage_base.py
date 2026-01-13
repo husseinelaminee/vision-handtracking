@@ -7,9 +7,3 @@ class Stage(ABC):
     @abstractmethod
     def process(self, frame, state):
         pass
-
-    def attach_ui(self):
-        pass
-
-    def dispose(self):
-        pass
