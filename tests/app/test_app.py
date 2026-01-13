@@ -4,7 +4,9 @@ from vision.pipeline.pipeline import Pipeline
 from vision.pipeline.stages.mock_camera_stage import MockCameraStage
 
 def test_app_headless():
-    pipelines = [Pipeline([MockCameraStage()])]
-    app = Application(pipelines, Renderer(headless=True))
-
+    pipeline = Pipeline([
+        MockCameraStage()
+    ])
+    app = Application(pipeline, Renderer(headless=True))
+    app.initialize()
     app.run(frames=5)
