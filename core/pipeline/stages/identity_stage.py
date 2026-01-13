@@ -1,4 +1,4 @@
-from vision.pipeline.stages.stage_base import Stage
+from core.pipeline.stages.stage_base import Stage
 
 class IdentityStage(Stage):
     def process(self, frame, state):

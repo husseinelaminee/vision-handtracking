@@ -1,7 +1,7 @@
 from core.event.event_bus import EventBus
 from core.event.subscriber import Subscriber
-from vision.pipeline.state import PipelineState
-from vision.pipeline.stages.stage_base import Stage
+from core.pipeline.state import PipelineState
+from core.pipeline.stages.stage_base import Stage
 
 class Pipeline:
     def __init__(self, stages: list[Stage]) -> None:

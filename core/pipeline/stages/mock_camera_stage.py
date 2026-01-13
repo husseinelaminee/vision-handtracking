@@ -1,5 +1,5 @@
 from utils.path import SNAPSHOT_DIR
-from vision.pipeline.stages.stage_base import Stage
+from core.pipeline.stages.stage_base import Stage
 import cv2, random
 
 class MockCameraStage(Stage):

@@ -1,5 +1,5 @@
-from vision.pipeline.stages.stage_base import Stage
-from vision.pipeline.state import PipelineState
+from core.pipeline.stages.stage_base import Stage
+from core.pipeline.state import PipelineState
 from vision.camera.camera_manager import CameraManager
 from core.event.event_type import CameraSelected
 from core.event.subscriber import Subscriber
