@@ -3,10 +3,12 @@ from app.renderer import Renderer
 from vision.pipeline.pipeline import Pipeline
 from vision.pipeline.stages.camera_source_stage import CameraSourceStage
 def test_app():
-    pipelines = [Pipeline([CameraSourceStage(
+    pipeline = Pipeline([
+        CameraSourceStage(
         mirror=True
-    )])]
-    app = Application(pipelines, Renderer())
-
+        )
+    ])
+    app = Application(pipeline, Renderer())
+    app.initialize()
     app.run()
 test_app()
