@@ -1,5 +1,5 @@
 from app.renderer import Renderer
-from vision.pipeline.pipeline import Pipeline
+from core.pipeline.pipeline import Pipeline
 
 class Application:
     def __init__(self, pipeline: Pipeline, renderer: Renderer):

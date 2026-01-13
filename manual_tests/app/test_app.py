@@ -1,7 +1,7 @@
 from app.app import Application
 from app.renderer import Renderer
-from vision.pipeline.pipeline import Pipeline
-from vision.pipeline.stages.camera_source_stage import CameraSourceStage
+from core.pipeline.pipeline import Pipeline
+from core.pipeline.stages.camera_source_stage import CameraSourceStage
 def test_app():
     pipeline = Pipeline([
         CameraSourceStage(
