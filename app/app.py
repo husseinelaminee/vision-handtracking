@@ -12,6 +12,8 @@ class Application:
 
         self._last_time = time.time()
         self._steps = 0
+        self.total_steps = 0
+        self.max_steps = None
         self.steps_per_second = 0
 
     def initialize(self):
@@ -19,10 +21,13 @@ class Application:
         self.renderer.start()
         self.pipeline.initialize()
 
-    def run(self):
+    def run(self, steps=None):
         if not self._initialized:
             raise Exception("Call initialize() before run()")
+        if steps is not None:
+            steps = max(steps,0)
 
+        self.max_steps = steps
         self._running = True
         
         # Start background thread for pipeline
@@ -30,15 +35,16 @@ class Application:
         t.start()
 
         # Main thread → rendering loop
-        while self.renderer.running() and self._running:
-            self.renderer.render_frame()
-
+        if not self.renderer.headless:
+            while self.renderer.running() and self._running:
+                self.renderer.render_frame()
+        else:
+            t.join()
         self._running = False
         self.renderer.close()
 
     def _pipeline_loop(self):
-        while self._running and self.renderer.running():
-
+        while self._running and (self.renderer.running() or self.renderer.headless):
             frame = self.pipeline.process(None)
 
             # Store latest frame in renderer
@@ -46,9 +52,13 @@ class Application:
 
             # PPS measurement
             self._steps += 1
+            self.total_steps += 1
             now = time.time()
             if now - self._last_time >= 1.0:
                 self.steps_per_second = self._steps
                 self._steps = 0
                 self._last_time = now
                 print(f"[PIPELINE] {self.steps_per_second} steps/s")
+
+            if self.max_steps is not None and self.total_steps >= self.max_steps:
+                return
