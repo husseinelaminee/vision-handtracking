@@ -12,7 +12,7 @@ class CameraControls(Publisher):
     def build(self):
 
         names = self.camera_manager.get_camera_names()
-        current = self.camera_manager.current_index or 0
+        current = self.camera_manager.current_index or -1
 
 
         with dpg.window(label="Camera Controls", pos=(20, 60), width=200):
