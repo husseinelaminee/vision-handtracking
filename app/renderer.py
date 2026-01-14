@@ -1,6 +1,8 @@
 import cv2
 import numpy as np
 import dearpygui.dearpygui as dpg
+import time
+import threading
 
 class Renderer:
     def __init__(self, width=1920, height=1080, headless=False):
@@ -10,6 +12,12 @@ class Renderer:
         self.win_h = height
         self.headless = headless
         self.quit = False
+        self.latest_frame = None
+        self._frame_lock = threading.Lock()
+        self._last_fps_time = time.time()
+        self._frames = 0
+        self.fps = 0
+
 
         self._aspect_ratio = 4/3
 
@@ -121,8 +129,29 @@ class Renderer:
             dpg.set_item_height("video_image", disp_h)
 
     def render_frame(self):
+        frame = self.get_latest()
+        if frame is not None:
+            self.update(frame)  # keep your existing update logic
+
         if not self.headless:
             dpg.render_dearpygui_frame()
+
+            self._frames += 1
+            now = time.time()
+            if now - self._last_fps_time >= 1.0:
+                self.fps = self._frames
+                self._frames = 0
+                self._last_fps_time = now
+                print(f"[RENDERER] {self.fps} fps")
+
+
+    def update_latest(self, frame):
+        with self._frame_lock:
+            self.latest_frame = frame
+
+    def get_latest(self):
+        with self._frame_lock:
+            return self.latest_frame
 
     def running(self):
         return (not self.headless) and (not self.quit) and dpg.is_dearpygui_running()
