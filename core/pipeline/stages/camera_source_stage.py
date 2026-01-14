@@ -22,4 +22,4 @@ class CameraSourceStage(Stage, Subscriber):
     def process(self, frame, state: PipelineState):
         frame = self._manager.get_frame()
         state.camera_index = self._manager.current_index
-        return frame, state
+        return frame
