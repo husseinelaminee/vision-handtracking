@@ -15,7 +15,7 @@ class Pipeline:
                 self.events.register_subscriber(stage)
             stage.initialize()
 
-    def process(self, frame):
+    def process(self, frame=None):
         for stage in self.stages:
-            frame, self.state = stage.process(frame, self.state)
+            frame = stage.process(frame, self.state)
         return frame
