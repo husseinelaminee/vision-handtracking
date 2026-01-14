@@ -9,4 +9,4 @@ def test_app_headless():
     ])
     app = Application(pipeline, Renderer(headless=True))
     app.initialize()
-    app.run(frames=5)
+    app.run(steps=5)
