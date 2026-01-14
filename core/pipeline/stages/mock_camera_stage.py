@@ -12,4 +12,4 @@ class MockCameraStage(Stage):
 
     def process(self, frame, state):
         frame = random.choice(self.frames)
-        return frame, state
+        return frame
