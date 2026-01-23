@@ -1,8 +1,7 @@
 import cv2
 import threading
-import time
+import platform
 from vision.camera.camera_utils import list_cameras
-
 class CameraManager:
     def __init__(self, mirror=True):
         self.mirror = mirror
@@ -38,15 +37,19 @@ class CameraManager:
 
         if self.cap:
             self.running = False
-            time.sleep(0.1)
+            # time.sleep(0.1)
             self.cap.release()
 
         # Open camera
-        self.cap = cv2.VideoCapture(self.pending_index)
+        if platform.system() == "Linux":
+            self.cap = cv2.VideoCapture(self.pending_index, cv2.CAP_V4L2)
+        else:
+            self.cap = cv2.VideoCapture(self.pending_index)
+
 
         # Force MJPEG + 30 FPS
-        fourcc = cv2.VideoWriter_fourcc(*"MJPG")
-        self.cap.set(cv2.CAP_PROP_FOURCC, fourcc)
+        # fourcc = cv2.VideoWriter_fourcc(*"MJPG")
+        # self.cap.set(cv2.CAP_PROP_FOURCC, fourcc)
         self.cap.set(cv2.CAP_PROP_FPS, 30)
         self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
         self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
@@ -67,8 +70,8 @@ class CameraManager:
                 if self.mirror:
                     frame = cv2.flip(frame, 1)
                 self.frame = frame
-            else:
-                time.sleep(0.005)
+            # else:
+            #     time.sleep(0.005)
 
     def get_frame(self):
         self.apply_change()
