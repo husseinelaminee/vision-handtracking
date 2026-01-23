@@ -31,19 +31,26 @@ class HandDetectionStage(Stage):
         if results.multi_hand_landmarks:
             state.hand_detected = True
 
-            hand_lm = results.multi_hand_landmarks[0]
-            handedness = results.multi_handedness[0].classification[0].label
+            state.handedness = []
+            state.landmarks = []
 
-            state.handedness = handedness
-            state.landmarks = [
-                (lm.x, lm.y, lm.z) for lm in hand_lm.landmark
-            ]
+            for hand_lm, hand_info in zip(
+                results.multi_hand_landmarks,
+                results.multi_handedness
+            ):
+                handedness = hand_info.classification[0].label
 
-            if self.draw:
-                self.mp_draw.draw_landmarks(
-                    frame,
-                    hand_lm,
-                    mp.solutions.hands.HAND_CONNECTIONS
-                )
+                state.handedness.append(handedness)
+                state.landmarks.append([
+                    (lm.x, lm.y, lm.z) for lm in hand_lm.landmark
+                ])
+
+                if self.draw:
+                    self.mp_draw.draw_landmarks(
+                        frame,
+                        hand_lm,
+                        mp.solutions.hands.HAND_CONNECTIONS
+                    )
+
 
         return frame
