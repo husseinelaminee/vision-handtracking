@@ -2,9 +2,12 @@ import time
 import threading
 from app.renderer import Renderer
 from core.pipeline.pipeline import Pipeline
+from core.event.event_type import Quit
+from core.event.subscriber import Subscriber
 
-class Application:
+class Application(Subscriber):
     def __init__(self, pipeline: Pipeline, renderer: Renderer):
+        super().__init__()
         self.pipeline = pipeline
         self.renderer = renderer
         self._initialized = False
