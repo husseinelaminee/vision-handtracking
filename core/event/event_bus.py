@@ -1,11 +1,18 @@
 from core.event.event_type import EventType
-from core.event.subscriber import Subscriber
 
 class EventBus:
-    def __init__(self):
-        self._subscribers: dict[type, list[callable]] = {}
+    _instance = None
+
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+            cls._subscribers: dict[type, list[callable]] = {}
+
+        return cls._instance
+        
 
     def register_subscriber(self, subscriber):
+        from core.event.subscriber import Subscriber
         # Check interface
         if not isinstance(subscriber, Subscriber):
             raise TypeError(
