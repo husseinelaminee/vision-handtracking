@@ -8,4 +8,9 @@ class PipelineState:
     hand_detected = False
     landmarks = None
     handedness = None
+    landmarks_filtered=None
+    hand_3d=None
+    depth_map=None
+    hand_3d_points=None
+    hand_3d_centroid=None
 
