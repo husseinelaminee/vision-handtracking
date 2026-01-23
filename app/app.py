@@ -21,6 +21,15 @@ class Application:
         self.renderer.start()
         self.pipeline.initialize()
 
+    @property
+    def events(self):
+        return [Quit]
+    
+    def handle_event(self, event: Quit):
+        print(f"Application exited because: {event.reason}")
+        self._running = False
+
+
     def run(self, steps=None):
         if not self._initialized:
             raise Exception("Call initialize() before run()")
