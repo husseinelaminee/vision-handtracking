@@ -13,4 +13,10 @@ class PipelineState:
     depth_map=None
     hand_3d_points=None
     hand_3d_centroid=None
+    four_fingers_points = None
+    four_fingers_hull = None
+    four_fingers_hull_area = 0.0
+    four_fingers_hull_centroid = None
+    midi_cc_area = None
+    midi_cc_pinch = None
 

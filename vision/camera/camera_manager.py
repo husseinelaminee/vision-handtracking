@@ -51,8 +51,8 @@ class CameraManager:
         # fourcc = cv2.VideoWriter_fourcc(*"MJPG")
         # self.cap.set(cv2.CAP_PROP_FOURCC, fourcc)
         self.cap.set(cv2.CAP_PROP_FPS, 30)
-        self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
-        self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
+        # self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
+        # self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
 
         self.running = True
         self.thread = threading.Thread(target=self._capture_loop, daemon=True)

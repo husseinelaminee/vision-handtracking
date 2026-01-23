@@ -6,3 +6,5 @@ mediapipe==0.10.9
 glfw
 PyOpenGL 
 PyOpenGL_accelerate
+mido 
+python-rtmidi

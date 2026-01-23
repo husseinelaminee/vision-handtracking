@@ -9,7 +9,7 @@ from core.event.event_type import Quit
 
 class Renderer(Publisher):
 
-    def __init__(self, width=720, height=480, headless=False):
+    def __init__(self, width=1920, height=1080, headless=False):
         super().__init__()
         self.tex_w = width
         self.tex_h = height
