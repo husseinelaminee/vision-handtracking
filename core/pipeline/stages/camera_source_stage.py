@@ -7,6 +7,7 @@ from app.ui.camera_controls import CameraControls
 
 class CameraSourceStage(Stage, Subscriber):
     def __init__(self, mirror: bool = True) -> None:
+        super().__init__()
         self._manager = CameraManager(mirror=mirror)
 
     @property
@@ -17,7 +18,7 @@ class CameraSourceStage(Stage, Subscriber):
         self._manager.request_change(event.index)
 
     def initialize(self) -> None:
-        CameraControls(self.event_bus, self._manager).build()
+        CameraControls(self._manager).build()
 
     def process(self, frame, state: PipelineState):
         frame = self._manager.get_frame()
