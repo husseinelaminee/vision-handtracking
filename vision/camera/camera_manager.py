@@ -1,74 +1,81 @@
 import cv2
-from vision.camera.camera import Camera
+import threading
+import time
 from vision.camera.camera_utils import list_cameras
 
 class CameraManager:
     def __init__(self, mirror=True):
         self.mirror = mirror
-        self.camera = None
+        self.cap = None
         self.current_index = None
         self.pending_index = None
-        self.name_index = None
-        self.indices: list[int] = None
+        self.indices = None
+
+        self.frame = None
+        self.running = False
+        self.thread = None
 
     def list_indices_once(self):
         if self.indices is None:
             self.indices = list_cameras()
         return self.indices
-    
+
     def get_camera_names(self):
         return [f"Camera {i}" for i in self.list_indices_once()]
-    
 
     def request_change(self, index):
         indices = self.list_indices_once()
-
         if index == -1:
-            # prendre la dernière caméra détectée
             index = indices[-1]
-
-        # Vérifie que l’index OS existe vraiment
         if index not in indices:
             print(f"[CameraManager] Invalid OS camera index: {index}")
             return
-
-        # Trouver la position UI correspondant à l'OS index
-        self.name_index = indices.index(index)
-
-        # Déclenche le changement réel (dans apply_change)
         self.pending_index = index
-
-
 
     def apply_change(self):
         if self.pending_index is None:
             return
 
-        if self.camera:
-            self.camera.release()
-        self.camera = Camera(self.pending_index)
-        self.camera.open()
+        if self.cap:
+            self.running = False
+            time.sleep(0.1)
+            self.cap.release()
+
+        # Open camera
+        self.cap = cv2.VideoCapture(self.pending_index)
+
+        # Force MJPEG + 30 FPS
+        fourcc = cv2.VideoWriter_fourcc(*"MJPG")
+        self.cap.set(cv2.CAP_PROP_FOURCC, fourcc)
+        self.cap.set(cv2.CAP_PROP_FPS, 30)
+        self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
+        self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
+
+        self.running = True
+        self.thread = threading.Thread(target=self._capture_loop, daemon=True)
+        self.thread.start()
+
         self.current_index = self.pending_index
+        self.pending_index = None
         print(f"[CameraManager] switched to camera {self.current_index}")
 
-        self.pending_index = None
+    def _capture_loop(self):
+        """Thread: lit en continu la caméra à 30 FPS."""
+        while self.running:
+            ret, frame = self.cap.read()
+            if ret:
+                if self.mirror:
+                    frame = cv2.flip(frame, 1)
+                self.frame = frame
+            else:
+                time.sleep(0.005)
 
     def get_frame(self):
         self.apply_change()
-
-        if not self.camera:
-            return None
-
-        frame = self.camera.read()
-        if frame is None:
-            return None
-
-        if self.mirror:
-            frame = cv2.flip(frame, 1)
-
-        return frame
+        return self.frame  # retourne immédiatement la dernière frame
 
     def release(self):
-        if self.camera:
-            self.camera.release()
-            self.camera = None
+        self.running = False
+        if self.cap:
+            self.cap.release()
+            self.cap = None
