@@ -7,12 +7,9 @@ class Pipeline:
     def __init__(self, stages: list[Stage]) -> None:
         self.stages = stages
         self.state = PipelineState()
-        self.events = EventBus()
 
     def initialize(self):
         for stage in self.stages:
-            if isinstance(stage, Subscriber):
-                self.events.register_subscriber(stage)
             stage.initialize()
 
     def process(self, frame=None):
