@@ -4,8 +4,13 @@ import dearpygui.dearpygui as dpg
 import time
 import threading
 
-class Renderer:
-    def __init__(self, width=1920, height=1080, headless=False):
+from core.event.publisher import Publisher
+from core.event.event_type import Quit
+
+class Renderer(Publisher):
+
+    def __init__(self, width=720, height=480, headless=False):
+        super().__init__()
         self.tex_w = width
         self.tex_h = height
         self.win_w = width
@@ -157,7 +162,8 @@ class Renderer:
         return (not self.headless) and (not self.quit) and dpg.is_dearpygui_running()
 
     def _quit(self):
-        self.quit = True
+        dpg.stop_dearpygui()
+        self.event_bus.emit(Quit("User pressed on ESC"))
 
     def close(self):
         if not self.headless:
