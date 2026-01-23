@@ -56,15 +56,21 @@ class Application(Subscriber):
         self.renderer.close()
 
     def _pipeline_loop(self):
-        while self._running and (self.renderer.running() or self.renderer.headless):
-            frame = self.pipeline.process(None)
+        target_fps = 60
+        frame_duration = 1.0 / target_fps
 
-            # Store latest frame in renderer
+        while self._running and (self.renderer.running() or self.renderer.headless):
+
+            start_time = time.time()
+
+            # pipeline step
+            frame = self.pipeline.process(None)
             self.renderer.update_latest(frame)
 
             # PPS measurement
             self._steps += 1
             self.total_steps += 1
+
             now = time.time()
             if now - self._last_time >= 1.0:
                 self.steps_per_second = self._steps
@@ -74,3 +80,9 @@ class Application(Subscriber):
 
             if self.max_steps is not None and self.total_steps >= self.max_steps:
                 return
+
+            # adaptive sleep
+            elapsed = time.time() - start_time
+            remaining = frame_duration - elapsed
+            if remaining > 0:
+                time.sleep(remaining)
