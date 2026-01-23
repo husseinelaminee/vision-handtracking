@@ -12,5 +12,6 @@ def launch():
     app.initialize()
     app.run()
 
-# LAUNCH
-launch()
+# ENTRYPOINT
+if __name__ == "__main__":
+    launch()
