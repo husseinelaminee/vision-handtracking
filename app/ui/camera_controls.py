@@ -5,8 +5,8 @@ from core.event.publisher import Publisher
 from vision.camera.camera_manager import CameraManager
 
 class CameraControls(Publisher):
-    def __init__(self, event_bus:EventBus, camera_manager:CameraManager):
-        super().__init__(event_bus)
+    def __init__(self, camera_manager:CameraManager):
+        super().__init__()
         self.camera_manager:CameraManager = camera_manager
 
     def build(self):
