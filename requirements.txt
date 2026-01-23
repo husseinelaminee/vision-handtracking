@@ -3,3 +3,6 @@ pytest
 pillow
 dearpygui
 mediapipe==0.10.9
+glfw
+PyOpenGL 
+PyOpenGL_accelerate
